@@ -1,4 +1,3 @@
-# Conectar python + HTML + MySQL
 from flask import Flask, render_template, request
 import mysql.connector
 
@@ -6,13 +5,21 @@ app = Flask(__name__)
 
 conexao = mysql.connector.connect(
     host="localhost",
-    user="root",
-    password="SUA_SENHA",
+    user="biblioteca_app",
+    password="biblioteca123",
     database="biblioteca"
 )
 
-@app.route("/", methods=["GET", "POST"])
+print("Conectado ao banco!")
+
+
+@app.route("/")
 def inicio():
+    return render_template("index.html")
+
+
+@app.route("/cadastro_usuario", methods=["GET", "POST"])
+def cadastro_usuario():
 
     if request.method == "POST":
 
@@ -20,11 +27,23 @@ def inicio():
         matricula = request.form["matricula"]
         email = request.form["email"]
 
-        print(nome)
-        print(matricula)
-        print(email)
+        cursor = conexao.cursor()
 
-    return render_template("index.html")
+        sql = """
+        INSERT INTO usuarios (nome, matricula, email)
+        VALUES (%s, %s, %s)
+        """
 
-app.run(debug=True)
+        valores = (nome, matricula, email)
 
+        cursor.execute(sql, valores)
+        conexao.commit()
+
+        cursor.close()
+
+        print("Usuário cadastrado!")
+
+    return render_template("cadastro_usuario.html")
+
+
+app.run(host="0.0.0.0", port=5000, debug=True)
